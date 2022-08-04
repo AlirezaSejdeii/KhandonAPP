@@ -1,0 +1,56 @@
+﻿@page "/Account/SignUpConfirm"
+
+<AccountLyout PageTitle="تایید حساب کاربری" Loading=loading>
+
+    <PageForm>
+
+        <br />
+
+        @if (result)
+        {
+            <MudAlert AlertTextPosition="AlertTextPosition.Center" Severity="Severity.Success" Icon="@Icons.Filled.CheckCircleOutline">احراز هویت با موفقیت انجام شد</MudAlert>
+        }
+        else
+        {
+            <MudAlert AlertTextPosition="AlertTextPosition.Center" Severity="Severity.Error" Icon="@Icons.Outlined.Cancel">لینک فعلی فاقد اعتبار میباشد</MudAlert>
+        }
+
+        <br />
+
+        <MudItem>
+
+            <MudLink Href="/Account/Login">ورود به حساب کاربری</MudLink>
+        </MudItem>
+
+    </PageForm>
+</AccountLyout>
+
+@code {
+    [Inject]
+    public NavigationManager navigationManager { get; set; }
+
+    [Inject]
+    public UserStateService userStateService { get; set; }
+
+    bool loading = true;
+    bool result = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        loading = true;
+
+        //Find values from Query
+        //navigationManager.TryGetQueryString("Token", out string token);
+        //navigationManager.TryGetQueryString("Email", out string email);
+
+        var query=   System.Web.HttpUtility.ParseQueryString(navigationManager.ToAbsoluteUri(navigationManager.Uri).Query,System.Text.Encoding.UTF8);
+        string token=query.GetValues("token").FirstOrDefault();
+        string email = query.GetValues("email").FirstOrDefault();
+        if (token != null && email != null)
+        {
+            result = await userStateService.SignUpConfirmAsync(token, email);
+        }
+        loading = false;
+
+    }
+}

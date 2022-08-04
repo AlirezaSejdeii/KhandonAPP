@@ -1,0 +1,70 @@
+﻿
+<MudItem Class="d-flex align-center justify-space-between justify-center flex-row flex-wrap flex-grow-1 gap-4 pa-2 pt-6">
+
+    <div style="display: inherit;">
+        <MudText Class="pl-2 pr-2">@Easy</MudText>
+        <MudAvatar Color="Color.Info" Size="Size.Small"></MudAvatar>
+    </div>
+
+    <div style="display: inherit;">
+        <MudText Class="pl-2 pr-2">@Medum</MudText>
+        <MudAvatar Color="Color.Primary" Size="Size.Small"></MudAvatar>
+    </div>
+
+    <div style="display: inherit;">
+        <MudText Class="pl-2 pr-2">@Hard</MudText>
+        <MudAvatar Color="Color.Error" Size="Size.Small"></MudAvatar>
+    </div>
+
+    <MudSlider Size="Size.Large"
+               Min="1" Max="9"
+               Class="mt-n3"
+               Color=UserStudiesStatus(val)
+               @bind-Value="val"
+               onchange="@(()=>ValueChanged(val))"
+               Disabled=Disable />
+</MudItem>
+@code {
+    private int val = 1;
+
+    [Parameter] public EventCallback<int> Value { get; set; }
+    [Parameter] public string Easy { get; set; } = "";
+    [Parameter] public string Medum { get; set; } = "";
+    [Parameter] public string Hard { get; set; } = "";
+
+    [Parameter] public int InitialValue { get; set; }
+
+    [Parameter] public bool Disable { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (InitialValue != 0 && InitialValue != null)
+        {
+            val = InitialValue;
+        }
+    }
+    async Task ValueChanged(int value)
+    {
+        StateHasChanged();
+        await Value.InvokeAsync(value);
+    }
+
+    public Color UserStudiesStatus(int value)
+    {
+        if (value > 1 && value <= 3)
+        {
+            return Color.Info;
+        }
+
+        if (value > 3 && value <= 6)
+        {
+            return Color.Primary;
+        }
+
+        if (value > 6 && value <= 10)
+        {
+            return Color.Error;
+        }
+        return Color.Info;
+    }
+}

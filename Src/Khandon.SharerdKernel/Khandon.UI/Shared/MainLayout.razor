@@ -1,0 +1,179 @@
+﻿@inherits LayoutComponentBase
+
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MudThemeProvider IsDarkMode="_darkMode" />
+
+<MudRTLProvider RightToLeft=true>
+    <MudLayout>
+        <MudAppBar Elevation="0">
+            <MudIconButton Icon="@Icons.Material.Outlined.AccountCircle" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+            <MudIconButton Icon="@((_darkMode)?@Icons.Outlined.WbSunny:@Icons.Outlined.DarkMode)" Color="Color.Inherit" OnClick=DarkMode />
+            <MudSpacer />
+
+            <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => LastPage())" />
+
+            @*    <MudText Typo="Typo.h6"><PageTitle ChildContent="re"></PageTitle></MudText>
+            <MudSpacer />*@
+        </MudAppBar>
+        <MudDrawer @bind-Open="_drawerOpen" Elevation="1">
+            <MudDrawerHeader>
+                <MudText Typo="Typo.h6" Align="Align.Center">@menu</MudText>
+            </MudDrawerHeader>
+            <NavMenu />
+        </MudDrawer>
+        <MudMainContent Style="margin-bottom:80px">
+            <MudContainer MaxWidth="MaxWidth.Medium" Class="my-4 pt-4 pa-4">
+                @Body
+            </MudContainer>
+        </MudMainContent>
+
+        @*<MudAppBar Bottom="true" Fixed="true" Color="Color.Surface" Elevation="0" Class="l1">
+
+        </MudAppBar>*@
+        <MudAppBar Bottom="true" Fixed="true" Elevation="0" Class="mt-4">
+
+            <AuthorizeView>
+                <MudButton Disabled=@IsInLink("SocietyStatus") EndIcon="@Icons.Filled.SatelliteAlt" Variant="Variant.Text" Color="Color.Inherit" Href="/SocietyStatus" Style="height:100%;width:100%">جامعه</MudButton>
+                <MudButton Disabled=@IsInLink("MyStatus") EndIcon="@Icons.Filled.Person" Variant="Variant.Text" Color="Color.Inherit" Href="/MyStatus" Style="height:100%;width:100%">آمار</MudButton>
+                <MudButton EndIcon="@Icons.Filled.Book" Variant="Variant.Text" Color="Color.Inherit" OnClick=AddBook Style="height:100%;width:100%">کتاب </MudButton>
+                <MudButton Disabled=@IsInLink("") EndIcon="@Icons.Filled.Home" Variant="Variant.Text" Color="Color.Inherit" Href="/" Style="height:100%;width:100%">خانه</MudButton>
+            </AuthorizeView>
+
+
+            @*<MudFab Icon="@Icons.Outlined.Home" Color="Color.Primary" Size="Size.Small" Label="خانه" Href="/">خانه</MudFab>*@
+        </MudAppBar>
+
+    </MudLayout>
+</MudRTLProvider>
+@code {
+    bool _drawerOpen = false;
+    bool _darkMode = false;
+
+    string menu = "حساب کاربری";
+
+    [Inject] public NavigationManager navigationManager { get; set; }
+    [Inject] public NavigationService navigationService { get; set; }
+
+    [Inject] public IDialogService dialogService { get; set; }
+
+    [Inject] public Blazored.LocalStorage.ILocalStorageService localStorage { get; set; }
+
+    [Inject] public UserStateService userStateService { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        string darked = await localStorage.GetItemAsStringAsync("_darkMode");
+        if (string.IsNullOrEmpty(darked))
+        {
+            _darkMode = false;
+        }
+        else
+        {
+
+            switch (darked)
+            {
+                case "true":
+                    _darkMode = true;
+                    break;
+                case "True":
+                    _darkMode = true;
+                    break;
+                case "false":
+                    _darkMode = false;
+                    break;
+                case "False":
+                    _darkMode = false;
+                    break;
+                default:
+                    _darkMode = false;
+                    break;
+            }
+        }
+        ChangeMenuName();
+        userStateService.OnUserstateChange += ChangeMenuName;
+    }
+    public  async Task ChangeMenuName()
+    {
+        var user = await userStateService.GetUserState();
+        if (user != null)
+        {
+            if (!string.IsNullOrWhiteSpace(user.Username))
+            {
+                menu = user.Username;
+            }
+            return;
+        }
+        else
+        {
+            menu = "حساب کاربری";
+        }
+    }
+    bool IsInLink(string link)
+    {
+        if (string.IsNullOrEmpty(link))
+        {
+            return navigationManager.Uri == navigationManager.BaseUri;
+        }
+        return navigationManager.Uri.Contains(link);
+    }
+    DialogOptions options = new DialogOptions()
+        {
+            FullWidth = true,
+        };
+
+    void AddBook() => dialogService.Show<NewBook>("کتاب جدید", options);
+
+
+
+    async void DarkMode()
+    {
+        if (await localStorage.ContainKeyAsync("_darkMode"))
+        {
+            await localStorage.RemoveItemAsync("_darkMode");
+        }
+
+        _darkMode = !_darkMode;
+        StateHasChanged();
+        await localStorage.SetItemAsStringAsync("_darkMode", _darkMode.ToString());
+    }
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    void LastPage()
+    {
+        if (navigationService.CanNavigateBack)
+        {
+            navigationService.NavigateBack();
+        }
+    }
+    MudTheme MyCustomTheme = new MudTheme()
+    {
+        //Palette = new Palette()
+        //{
+        //    Primary = Colors.Blue.Default,
+        //    Secondary = Colors.Green.Accent4,
+        //    AppbarBackground = Colors.Red.Default,
+        //    AppbarText=Colors.Red.Lighten1,
+        //    TextPrimary=Colors.Red.Lighten1,
+        //    DrawerText=Colors.Red.Lighten1,
+
+        //},
+        //PaletteDark = new Palette()
+        //{
+        //    Primary = Colors.Grey.Darken3,
+        //    PrimaryDarken=Colors.Grey.Darken4,
+        //    PrimaryLighten=Colors.Grey.Darken3,
+        //    TextPrimary=Colors.Grey.Darken1,
+        //    PrimaryContrastText=Colors.Grey.Darken1,
+        //    AppbarText=Colors.BlueGrey.Darken1
+        //},
+
+        //LayoutProperties = new LayoutProperties()
+        //{
+        //    DrawerWidthLeft = "260px",
+        //    DrawerWidthRight = "300px"
+        //}
+    };
+}

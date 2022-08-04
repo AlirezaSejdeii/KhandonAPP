@@ -1,0 +1,103 @@
+﻿@page "/"
+@attribute [Authorize]
+
+<PageTitle>کتابخونه من</PageTitle>
+
+@*<a href="/Book">*@
+@if (loading == false)
+{
+    @foreach (var item in bookListResponse.Books)
+    {
+        <MudCard Square=true Elevation="2" Class="mt-6" onclick="@(()=>GoDetial(item.Id))">
+            <MudGrid>
+                <MudItem xs="3" sm="3" lg="3" Class="d-flex align-content-center justify-center flex-column flex-wrap flex-grow-1 gap-4">
+                    <MudAvatar Color="Color.Info" Variant="Variant.Outlined">
+                        @if (item.BookType == Khandon.Shared.Dto.Enums.BookTypeEnum.Minut)
+                        {
+                            <MudIcon Icon="@Icons.Outlined.AccessTime" />
+                        }
+                        else
+                        {
+                            <MudIcon Icon="@Icons.Outlined.Book" />
+                        }
+                    </MudAvatar>
+                </MudItem>
+                <MudItem xs="5" sm="7" lg="7" Class="d-flex align-content-center justify-center flex-column flex-wrap flex-grow-1 gap-4">
+                    <MudText Typo="Typo.subtitle2">
+                        @item.Title
+                    </MudText>
+                    @{
+                        int countStdury = item.Chapters.SelectMany(a => a.Studies.Select(b => b.Length).ToList()).Count();
+                    }
+                    @if (countStdury != 0)
+                    {
+                        <MudText Typo="Typo.body2" Align="Align.Center">
+                            تا الان @countStdury مطالعه انجام شده
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.body2" Align="Align.Center">
+                            تا الان مطالعه ای ثبت نشد
+                        </MudText>
+                    }
+                </MudItem>
+                <MudItem xs="4" sm="2" lg="2">
+                    @{
+                        var listStudies = item.Chapters.SelectMany(a => a.Studies.Select(b => b.Length).ToList()).ToList();
+                    }
+                    <MiniChart values="listStudies"></MiniChart>
+                    @*<MiniChart values="li1"></MiniChart>*@
+                </MudItem>
+            </MudGrid>
+        </MudCard>
+    }
+}
+else
+{
+    <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="120px" Class="mt-6" />
+    <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="120px" Class="mt-6" />
+}
+
+@*</a>*@
+
+
+@code {
+
+    // List<int> li1 = new List<int>() { 40, 20, 25, 27, 46, 60, 48, 80, 15, 50 };
+
+    [Inject] public BookStateService bookState { get; set; }
+    [Inject] public NavigationManager navigationManager { get; set; }
+    bool loading = true;
+
+    public BookListResponse bookListResponse = new BookListResponse();
+
+
+    protected override void OnInitialized()
+    {
+        bookListResponse.Books = new();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        loading = true;
+        await LoadBookList();
+        bookState.OnNewBookAdded +=NewBookAdded;
+        loading = false;
+    }
+    void NewBookAdded()
+    {
+        LoadBookList().GetAwaiter();
+    }
+    void GoDetial(Guid Id)
+    {
+        Console.WriteLine($"Detail {Id.ToString()}");
+        navigationManager.NavigateTo($"/Book/{Id}");
+    }
+
+    async Task LoadBookList()
+    {
+        bookListResponse.Books = await bookState.GetBooksAsync();
+        StateHasChanged();
+    }
+}

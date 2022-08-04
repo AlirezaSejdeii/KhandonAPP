@@ -1,0 +1,68 @@
+﻿<PageTitle>@PageTitle</PageTitle>
+<MudGrid Class="d-flex align-content-center justify-center flex-wrap flex-grow-1 gap-4">
+    <MudItem xs="12" sm="5" Style="width:inherit">
+
+        <MudCard Class="pa-6">
+            <MudItem>
+                <MudText>
+                    @PageTitle
+                </MudText>
+                <hr />
+                @if (Loading)
+                {
+                    <MudItem Class="pt-4">
+                        <MudProgressLinear Color="Color.Tertiary"
+                                       Buffer="true"
+                                       Value="@Value"
+                                       BufferValue="@BufferValue"
+                                       Class="my-7" />
+                    </MudItem>
+                }
+                else
+                {
+                    @PageForm
+                }
+            </MudItem>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+@code {
+    [Parameter]
+    public RenderFragment PageForm { get; set; }
+    [Parameter]
+    public string PageTitle { get; set; }
+    [Parameter]
+    public bool Loading { get; set; }
+
+    public int Value { get; set; }
+    public int BufferValue { get; set; }
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        SimulateProgress();
+    }
+
+    public async void SimulateProgress()
+    {
+        Value = 5;
+        BufferValue = 10;
+
+        do
+        {
+            if (Loading == false)
+            {
+                return;
+            }
+
+            Value += 4;
+            BufferValue += 5;
+            StateHasChanged();
+            await Task.Delay(500);
+
+        } while (Value < 100);
+
+        SimulateProgress();
+    }
+}

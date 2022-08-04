@@ -1,0 +1,46 @@
+﻿@page "/Account/Login"
+
+<AccountLyout PageTitle="ورود به حساب کاربری" Loading=loading>
+    <PageForm>
+        <EditForm Model="userLogin" OnValidSubmit="LoginUser">
+
+            <FluentValidationValidator></FluentValidationValidator>
+
+            <MudTextField For="(()=> userLogin.UsernameOrEmail)"
+                          @bind-Value="userLogin.UsernameOrEmail"
+                          Label="نام کاربری یا ایمیل"></MudTextField>
+
+            <MudTextField For="(()=> userLogin.Password)"
+                          @bind-Value="userLogin.Password"
+                          InputType="InputType.Password"
+                          Label="کلمه عبور"></MudTextField>
+
+
+            <br />
+
+            <MudItem>
+                <MudLink Href="/Account/RecoveryPassword">بازیابی کلمه عبور</MudLink>
+            </MudItem>
+            <MudItem>
+                <MudLink Href="/Account/SignUp">حساب کاربری ندارم</MudLink>
+            </MudItem>
+            <br />
+            <MudButton ButtonType="ButtonType.Submit" FullWidth Color="Color.Primary" Variant="Variant.Outlined">
+                ورود
+            </MudButton>
+        </EditForm>
+    </PageForm>
+</AccountLyout>
+@code {
+    [Inject]
+    public UserStateService userStateService { get; set; }
+
+    bool loading = false;
+    UserLogin userLogin = new UserLogin();
+    async Task LoginUser()
+    {
+        loading = true;
+        await userStateService.LoginUserAsync(userLogin);
+        loading = false;
+    }
+}

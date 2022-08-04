@@ -1,0 +1,22 @@
+﻿<div>
+    <canvas id="myChart" style="max-height:250px; width:100%"></canvas>
+</div>
+@code {
+    [Inject] public IJSRuntime jsRuntime { get; set; }
+
+    [Parameter]
+    public int[] numbers { get; set; } = { };
+    [Parameter]
+    public string[] chapters { get; set; } = { };
+    [Parameter]
+    public string[] types { get; set; } = { };
+    [Parameter]
+    public string[] lables { get; set; } = { };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await jsRuntime.InvokeVoidAsync("addChartjsLine");
+        await Task.Delay(1000);
+        await jsRuntime.InvokeVoidAsync("makeChart",numbers,chapters,types,lables);
+    }
+}

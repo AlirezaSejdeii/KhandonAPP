@@ -1,0 +1,55 @@
+﻿@page "/Account/SignUp"
+
+<AccountLyout PageTitle="ایجاد حساب کاربری" Loading=loading>
+    <PageForm>
+        <EditForm Model="userSignUp" OnValidSubmit="SignUpUser">
+
+            <FluentValidationValidator></FluentValidationValidator>
+
+            <MudTextField For="(()=> userSignUp.Email)"
+                          @bind-Value="userSignUp.Email"
+                          @bind-Text="userSignUp.Email"
+                          InputType="InputType.Email"
+                          Label="ایمیل"></MudTextField>
+
+            <MudTextField For="(()=> userSignUp.Username)"
+                          @bind-Value="userSignUp.Username"
+                          Label="نام کاربری"></MudTextField>
+
+            <MudTextField For="(()=> userSignUp.Password)"
+                          @bind-Value="userSignUp.Password"
+                          InputType="InputType.Password"
+                          Label="کلمه عبور"></MudTextField>
+
+
+            <br />
+
+            <MudItem>
+
+                <MudLink Href="/Account/Login">حساب کاربری دارم</MudLink>
+            </MudItem>
+            <br />
+            <MudButton ButtonType="ButtonType.Submit" FullWidth Color="Color.Primary" Variant="Variant.Outlined">
+                ثبت نام
+            </MudButton>
+        </EditForm>
+    </PageForm>
+</AccountLyout>
+@code {
+    [Inject]
+    public ISnackbar snackbar { get; set; }
+
+    [Inject]
+    public UserStateService userStateService { get; set; }
+
+    UserSignUp userSignUp = new UserSignUp();
+
+    bool loading = false;
+
+    async Task SignUpUser()
+    {
+        loading = true;
+        await userStateService.SignUpUserAsync(userSignUp);
+        loading = false;
+    }
+}

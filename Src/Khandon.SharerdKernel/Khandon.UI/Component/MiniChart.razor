@@ -1,0 +1,13 @@
+﻿<div class="d-flex align-end justify-end mud-height-full  ml-3 mr-3" style="height:@(height)px">
+    @foreach (int item in values.ToArray().Reverse())
+    {
+        string val = (item * 100 / values.Max()).ToString() + "%";
+        <MudPaper Class="mud-paper-square mud-elevation-1 mud-primary mr-1 rounded-t" Height="@val" Width="50px" MaxWidth="15px" Elevation="1">    </MudPaper>
+    }
+</div>
+@code {
+    [Parameter]
+    public int height { get; set; } = 100;
+    [Parameter]
+    public List<int> values { get; set; } = new List<int>();
+}

@@ -1,0 +1,325 @@
+﻿@page "/MyStatus"
+@using Khandon.SharerdKernel.UI.Models
+@attribute [Authorize]
+
+
+<PageTitle>آمار مطالعات من</PageTitle>
+@if (loading == false)
+{
+    @if (myStatusDto.IsData)
+    {
+
+        <MudGrid Class="pa-2">
+
+
+            <MudItem xs="12" Class="mb-n3">
+                <MudText Typo="Typo.subtitle2">
+                    مقیاس دشواری مطالعات
+                </MudText>
+            </MudItem>
+            <MudItem xs="12" sm="12">
+                <DIficaltySlider Disable=true InitialValue="myStatusDto.DificaltyAvg"></DIficaltySlider>
+            </MudItem>
+
+            <MudItem xs="12" Class="mb-n3">
+                <MudText Typo="Typo.subtitle2">
+                    بیشترین مطالعه ثبت شده
+                </MudText>
+            </MudItem>
+
+            <MudItem xs="12" sm="12">
+                <MudGrid>
+                    <MudItem xs="6">
+                        <MudCard Elevation="2" Class="pa-2">
+                            <MudText Align="Align.Center">
+                                @myStatusDto.MaxReadingMinute دقیقه
+                            </MudText>
+                        </MudCard>
+                    </MudItem>
+                    <MudItem xs="6">
+                        <MudCard Elevation="2" Class="pa-2">
+                            <MudText Align="Align.Center">
+                                @myStatusDto.MaxReadingPage صفحه
+                            </MudText>
+                        </MudCard>
+                    </MudItem>
+                </MudGrid>
+            </MudItem>
+
+
+            <MudItem xs="12" Class="mb-n3">
+                <MudText Typo="Typo.subtitle2">
+                    میانگین مطالعه روزانه شما
+                </MudText>
+            </MudItem>
+
+            <MudItem xs="12" sm="12">
+                <MudGrid>
+                    <MudItem xs="6">
+                        <MudCard Elevation="2" Class="pa-2">
+                            <MudText Align="Align.Center">
+                                @myStatusDto.AvgReadingMinute دقیقه
+                            </MudText>
+                        </MudCard>
+                    </MudItem>
+                    <MudItem xs="6">
+                        <MudCard Elevation="2" Class="pa-2">
+                            <MudText Align="Align.Center">
+                                @myStatusDto.AvgReadingPage صفحه
+                            </MudText>
+                        </MudCard>
+                    </MudItem>
+                </MudGrid>
+            </MudItem>
+
+
+            <MudItem xs="12" Class="mb-n3">
+                <MudText Typo="Typo.subtitle2">
+                    کل مطالعات
+                </MudText>
+            </MudItem>
+
+            <MudItem xs="12" sm="12">
+                <MudGrid>
+                    <MudItem xs="6">
+                        <MudCard Elevation="2" Class="pa-2">
+                            <MudText Align="Align.Center">
+                                @myStatusDto.TotalReadingMinute دقیقه
+                            </MudText>
+                        </MudCard>
+                    </MudItem>
+
+                    <MudItem xs="6">
+                        <MudCard Elevation="2" Class="pa-2">
+                            <MudText Align="Align.Center">
+                                @myStatusDto.TotalReadingPage صفحه
+                            </MudText>
+                        </MudCard>
+                    </MudItem>
+
+                </MudGrid>
+            </MudItem>
+
+
+            <MudItem xs="12" Class="mb-n3">
+                <MudText Typo="Typo.subtitle2">
+                    موضوعات مورد مطالعه
+                </MudText>
+            </MudItem>
+
+            <MudGrid Class="d-flex align-center justify-center">
+                <MudItem xs="12" sm="6">
+                    <MudSimpleTable Style="overflow-x: auto;" Dense=true Hover=true Striped=true>
+                        <thead>
+                            <tr>
+                                <th>
+                                    موضوع
+                                </th>
+                                <th>
+                                    درصد
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in myStatusDto.ActiveStudyGroup)
+                            {
+
+                                <tr>
+                                    <td>@item.Key</td>
+                                    <td>@item.Value</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudChart ChartType="ChartType.Pie"
+                      LegendPosition="Position.Top"
+                      InputData="@data.ToArray()"
+                      InputLabels="@labelsCatgories.ToArray()"
+                      Width="100%"></MudChart>
+                </MudItem>
+            </MudGrid>
+
+
+            <MudGrid Class="d-flex align-center justify-center">
+                <MudItem xs="12" sm="12">
+                    <MudRadioGroup SelectedOptionChanged="TimeFrameChanged"
+                           T="ReadingActivityDateEnum"
+                           SelectedOption="Radio_Size"
+                           Style="text-align:center;margin-bottom:-24px;margin-top:60px;">
+                        <MudRadio Option="ReadingActivityDateEnum.DAY" Color="Color.Info" Size="Size.Large">روز</MudRadio>
+                        <MudRadio Option="ReadingActivityDateEnum.WEEK" Color="Color.Info" Size="Size.Large">هفته</MudRadio>
+                        <MudRadio Option="ReadingActivityDateEnum.MONTH" Color="Color.Info" Size="Size.Large">ماه</MudRadio>
+                    </MudRadioGroup>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudSimpleTable Style="overflow-x: auto;" Dense=true Hover=true Striped=true>
+                        <thead>
+                            <tr>
+                                <th>
+                                    @periodTimeName
+                                </th>
+                                <th>
+                                    صفحه
+                                </th>
+                                <th>
+                                    دقیقه
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in activieReads)
+                            {
+                                <tr>
+                                    <td>@item.Data</td>
+                                    <td>@item.LengthPage</td>
+                                    <td>@item.LengthMinut</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudChart ChartType="ChartType.Bar"
+                      LegendPosition="Position.Top"
+                      ChartSeries="Series"
+                      XAxisLabels="labels.ToArray()"
+                      Style="font-size:18px"
+                      Width="100%"></MudChart>
+                </MudItem>
+            </MudGrid>
+
+        </MudGrid>
+    }
+
+}
+else
+{
+    <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="100px" Class="mt-6" />
+    <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="100px" Class="mt-6" />
+    <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="100px" Class="mt-6" />
+    <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="100px" Class="mt-6" />
+    <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="100px" Class="mt-6" />
+
+    <MudGrid>
+        <MudItem sm="6">
+            <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="300px" Class="mt-6" />
+        </MudItem>
+        <MudItem sm="6">
+            <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="300px" Class="mt-6" />
+        </MudItem>
+    </MudGrid>
+    <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="60px" Class="mt-6" />
+    <MudGrid>
+        <MudItem sm="6">
+            <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="300px" Class="mt-6" />
+        </MudItem>
+        <MudItem sm="6">
+            <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="300px" Class="mt-6" />
+        </MudItem>
+    </MudGrid>
+
+}
+
+
+
+@code {
+    public List<double> data = new();
+    public List<string> labelsCatgories = new();
+
+    public List<string> labels = new();
+    //{ "تیر", "خرداد", "اردیبهشت", "فروردین" };
+    public List<ChartSeries> Series = new List<ChartSeries>()
+    {
+        //new ChartSeries() { Name = "مطالعات", Data = new double[] { 10, 20, 45, 25 } }
+    };
+    string periodTimeName = "روز";
+    List<StatusActiveReadsDto> activieReads = new();
+
+    ReadingActivityDateEnum Radio_Size = ReadingActivityDateEnum.WEEK;
+
+    [Inject] public BookStateService bookStateService { get; set; }
+    [Inject] public ISnackbar snackbar { get; set; }
+
+    MyStatusDto myStatusDto = new();
+    bool loading = true;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        loading = true;
+        myStatusDto = await bookStateService.GetMyStatusAsync();
+        if (myStatusDto.IsData == true)
+        {
+            foreach (var item in myStatusDto.ActiveStudyGroup)
+            {
+                data.Add(item.Value);
+                labelsCatgories.Add(item.Key);
+            }
+            await TimeFrameChanged(Radio_Size);
+        }
+        else
+        {
+            snackbar.Add("اطلاعاتی وجود ندارد",Severity.Warning);
+        }
+
+        loading = false;
+    }
+
+    async Task TimeFrameChanged(ReadingActivityDateEnum time)
+    {
+
+        Console.WriteLine(time.ToString());
+        try
+        {
+            switch (time)
+            {
+                case ReadingActivityDateEnum.DAY:
+                    periodTimeName = "روز";
+                    break;
+                case ReadingActivityDateEnum.WEEK:
+                    periodTimeName = "هفته";
+                    break;
+                case ReadingActivityDateEnum.MONTH:
+                    periodTimeName = "ماه";
+                    break;
+            }
+            Radio_Size = time;
+            labels = new();
+            Series = new();
+            StateHasChanged();
+            loading = true;
+
+            var result = await bookStateService.GetPeriodTimeActivityAsync(time, 15);
+            if (result != null)
+            {
+                activieReads = result;
+            }
+            else
+            {
+                activieReads = new();
+            }
+            Series.Add(new()
+                {
+                    Name = "دقیقه",
+                    Data = activieReads.Select(a => a.LengthMinut).ToArray()
+                });
+            Series.Add(new()
+                {
+                    Name = "متن",
+                    Data = activieReads.Select(a => a.LengthPage).ToArray()
+                });
+            labels.AddRange(activieReads.Select(a => a.Label));
+            loading = false;
+        }
+        catch (Exception e)
+        {
+            snackbar.Add("بارگذاری بخش مطالعات با خطا مواجه شد", Severity.Error);
+        }
+    }
+
+
+}

@@ -1,0 +1,179 @@
+﻿
+<EditForm Model="bookCreate" OnInvalidSubmit="CreateNewBook">
+    <MudDialog>
+        <DialogContent>
+            <FluentValidationValidator></FluentValidationValidator>
+
+            <MudAlert>
+                عموما نوع مطالعه 'صفحه' برای کتاب و 'دقیقه' برای کتاب صوتی، پادکست و ویدئو استفاده میشود
+            </MudAlert>
+
+         @*   <div class="mt-3">
+                <div style="text-align:center">
+                    <MudSwitch @bind-Checked="bookCreate.IsTextual" Color="Color.Primary">این مورد مطالعه متنی است</MudSwitch>
+                </div>
+                <MudDivider></MudDivider>
+            </div>*@
+
+            <MudTextField @bind-Value="bookCreate.Title"
+                          For="(()=> bookCreate.Title)"
+                          Label="عنوان" Variant="Variant.Text"
+                          Margin="Margin.Dense"></MudTextField>
+
+            <MudTextField @bind-Value="bookCreate.Description"
+                          For="(()=> bookCreate.Description)"
+                          Label="توضیح" Variant="Variant.Text"
+                          Margin="Margin.Dense"></MudTextField>
+
+            <MudSelect Class="mt-4"
+                       @bind-Value="BookType"
+                       Margin="Margin.Dense"
+                       Variant="Variant.Text"
+                       Label="نوع مطالعه"
+                       ErrorText="نوع مطالعه را انتخاب کنید"
+                       Error=@typeError>
+                <MudSelectItem Value="0">صفحه</MudSelectItem>
+                <MudSelectItem Value="1">دقیقه</MudSelectItem>
+            </MudSelect>
+
+
+
+            @if (loading == false)
+            {
+
+                <MudAutocomplete Variant="Variant.Text"
+                             Margin="Margin.Dense"
+                             Dense=true
+                             T="string"
+                             Label="گروه مطالعاتی"
+                             @bind-Value="Bookgroup"
+                             ErrorText="گروه مطالعاتی را انتخاب کنید"
+                             Error="@BookGroupError"
+                             SearchFunc="@Search"                             
+                             CoerceText="false"
+                             CoerceValue="false" />
+            }
+            else
+            {
+                <div style="text-align:center">
+                    <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true" />
+                </div>
+            }
+
+
+            <DIficaltySlider Value="Dificalty"></DIficaltySlider>
+
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="Cancel">کنسل</MudButton>
+
+            <MudButton ButtonType="ButtonType.Submit"
+                       Color="Color.Primary">
+                ذخیره
+            </MudButton>
+        </DialogActions>
+    </MudDialog>
+</EditForm>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Inject] BookGroupStateService bookGroupStateService { get; set; }
+    [Inject] BookStateService bookStateService { get; set; }
+    [Inject] NavigationManager navigationManager { get; set; }
+    //void Submit() => MudDialog.Close(DialogResult.Ok(true));
+    void Cancel() => MudDialog.Cancel();
+    BookCreate bookCreate = new BookCreate();
+
+    private string[] groups = { };
+
+    private bool typeError = false;
+    private string Bookgroup = "";
+    private int BookType = 0;
+    private bool BookGroupError = false;
+    private bool loading = false;
+    private List<BookGroupResult> BookgroupList = new();
+
+    void Dificalty(int val)
+    {
+        Console.WriteLine(val.ToString());
+        bookCreate.Difficultye = val;
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        loading = true;
+        var bookgroups = await bookGroupStateService.GetBookGroupsAsync();
+        if (bookgroups.Any())
+        {
+            groups = bookgroups.Select(a => a.Title).ToArray();
+            BookgroupList = bookgroups;
+        }
+        loading = false;
+
+    }
+
+    private async Task<IEnumerable<string>> Search(string value)
+    {
+        Console.WriteLine("Bookgroup:"+Bookgroup);
+        Console.WriteLine("Value:"+value);
+        // if text is null or empty, show complete list
+        if (string.IsNullOrEmpty(value))
+            return groups;
+        return groups.Where(x => x.Contains(value,
+            StringComparison.InvariantCultureIgnoreCase));
+    }
+
+
+    public Color UserStudiesStatus(int value)
+    {
+        if (value > 1 && value < 3)
+        {
+            return Color.Info;
+        }
+
+        if (value > 5 && value < 6)
+        {
+            return Color.Primary;
+        }
+
+        if (value > 10 && value <= 10)
+        {
+            return Color.Error;
+        }
+        return Color.Info;
+    }
+    async Task CreateNewBook()
+    {
+        typeError = false;
+        BookGroupError = false;
+        if (string.IsNullOrWhiteSpace(Bookgroup))
+        {
+            BookGroupError = true;
+            return;
+        }
+        else
+        {
+            bookCreate.BookGroupId = BookgroupList.FirstOrDefault(a => a.Title == Bookgroup).Id;
+        }
+        switch (BookType)
+        {
+            case 0:
+                bookCreate.BookType = (Khandon.Shared.Dto.Enums.BookTypeEnum)0;
+                break;
+            case 1:
+                bookCreate.BookType = (Khandon.Shared.Dto.Enums.BookTypeEnum)1;
+                break;
+            default:
+                typeError = true;
+                return;
+        }
+
+        await bookStateService.CreateBookAsync(bookCreate);
+        StateHasChanged();
+        Console.WriteLine(JsonConvert.SerializeObject(bookCreate).ToString());
+        //Console.WriteLine(JsonConvert.SerializeObject(bookCreate.BookType).ToString());
+        //navigationManager.NavigateTo("/");
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+}

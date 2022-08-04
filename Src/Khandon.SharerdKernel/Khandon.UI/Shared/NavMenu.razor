@@ -1,0 +1,28 @@
+﻿<MudNavMenu>
+    <AuthorizeView>
+        <NotAuthorized>
+
+            <MudNavLink Href="/Account/Login" Match="NavLinkMatch.All"
+                        Icon="@Icons.Material.Filled.Login">ورود به حساب کاربری</MudNavLink>
+
+            <MudNavLink Href="/Account/SignUp" Match="NavLinkMatch.All"
+                        Icon="@Icons.Material.Filled.PersonAdd">ایجاد حساب کاربری</MudNavLink>
+        </NotAuthorized>
+        <Authorized>
+        <MudNavLink Href="/Account/RestPassword" Match="NavLinkMatch.All"
+                    Icon="@Icons.Material.Filled.Refresh">تعغیر کلمه عبور</MudNavLink>
+        <MudNavLink OnClick="OnLogOut" Match="NavLinkMatch.All"
+                    Icon="@Icons.Material.Filled.ExitToApp">خروج</MudNavLink>
+        </Authorized>
+    </AuthorizeView>
+</MudNavMenu>
+
+@code {
+    [Inject]
+    public UserStateService userStateService { get; set; }
+
+    async Task OnLogOut()
+    {
+        await userStateService.LogOutUser();
+    }
+}

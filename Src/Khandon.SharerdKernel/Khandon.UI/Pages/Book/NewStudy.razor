@@ -1,0 +1,192 @@
+﻿@page "/NewStudy/{Id:guid}"
+@attribute [Authorize]
+
+<PageTitle>مطالعه جدید</PageTitle>
+
+@if (loading == false)
+{
+    <MudExpansionPanels DisableBorders=true DisableGutters=true>
+        <MudExpansionPanel IsInitiallyExpanded=IsGroupExpended HideIcon=true IsExpanded=IsGroupExpended>
+            <TitleContent>
+                <MudItem Class="d-flex align-center justify-space-between">
+
+                    <MudText>انتخاب فصل</MudText>
+                    @if (!IsGroupExpended)
+                    {
+                        <MudIconButton Icon="@Icons.Filled.KeyboardArrowDown" OnClick="(()=> IsGroupExpended=!IsGroupExpended)"></MudIconButton>
+                    }
+
+                </MudItem>
+            </TitleContent>
+            <ChildContent>
+                <MudList Clickable="true" Class="pa-3">
+                    @foreach (var item in Book.Chapters)
+                    {
+                        @*<MudListItem Text=@item.Title OnClick="(()=>GroupSelected(item.Id))" />*@
+                        <MudListItem OnClick="(()=>GroupSelected(item.Id))">
+                            <MudText>@item.Title</MudText>
+                            <MudText Typo="Typo.caption">@item.ShortDescription</MudText>
+
+                        </MudListItem>
+                        <MudDivider />
+                    }
+                    <MudDivider></MudDivider>
+                    <EditForm Model="chapterCreate" OnValidSubmit="SaveNewChapter">
+                        <div class="mud-list-item mud-list-item-gutters">
+                            <MudGrid>
+                                <FluentValidationValidator></FluentValidationValidator>
+                                <MudItem xs="3">
+                                    <MudButton Class="mt-5" ButtonType="ButtonType.Submit">+</MudButton>
+                                </MudItem>
+                                <MudItem xs="9">
+                                    <MudTextField @bind-Value="chapterCreate.Title" For="(()=>chapterCreate.Title)" Placeholder="فصل جدید"></MudTextField>
+                                    <MudTextField @bind-Value="chapterCreate.ShortDescription" For="(()=>chapterCreate.ShortDescription)" Placeholder="توضیح"></MudTextField>
+                                </MudItem>
+                            </MudGrid>
+                        </div>
+                    </EditForm>
+                </MudList>
+            </ChildContent>
+        </MudExpansionPanel>
+        <MudExpansionPanel IsInitiallyExpanded=IsGroupExpended HideIcon=true IsExpanded=!IsGroupExpended>
+            <TitleContent>
+
+                <MudText>مطالعه جدید</MudText>
+
+            </TitleContent>
+            <ChildContent>
+                <MudList Clickable="true" Class="pa-3">
+                    <EditForm Model="studyCreate" OnValidSubmit="SaveNewStudy">
+                        <FluentValidationValidator></FluentValidationValidator>
+                        <MudTextField Placeholder="عنوان" For="(()=> studyCreate.Title)" @bind-value="studyCreate.Title"></MudTextField>
+                        <MudTextField Placeholder="توضیح" For="(()=> studyCreate.ShortDescription)" @bind-value="studyCreate.ShortDescription"></MudTextField>
+                        <MudGrid Class="mt-4">                                          
+                            <MudItem xs="8">                                
+                                <MudNumericField Label="طول مطالعه" For="(()=> studyCreate.Length)" @bind-value="studyCreate.Length"></MudNumericField>
+                            </MudItem>
+                            <MudItem xs="4">
+                                <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-8">@((Book.BookType==Khandon.Shared.Dto.Enums.BookTypeEnum.Minut)?"دقیقه":"صفحه")</MudText>
+                            </MudItem>
+                               <MudItem xs="12">
+                                <MudNumericField Label="نشانگر" For="(()=> studyCreate.Flag)" @bind-value="studyCreate.Flag"></MudNumericField>
+                            </MudItem>
+                            <MudItem xs="12">
+                                @if (!IsGroupExpended)
+                                {
+                                    <MudButton ButtonType="ButtonType.Submit" Color="Color.Primary" Variant="Variant.Filled" FullWidth Class="mt-3">ذخیره سازی</MudButton>
+                                }
+                            </MudItem>  
+                        </MudGrid>
+                    </EditForm>
+                </MudList>
+            </ChildContent>
+        </MudExpansionPanel>
+
+    </MudExpansionPanels>
+
+
+}
+else
+{
+    <div style="text-align:center">
+        <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true" />
+    </div>
+}
+
+@code {
+    [Inject] public IDialogService dialogService { get; set; }
+    [Inject] public ISnackbar snackbar { get; set; }
+    [Inject] public BookStateService bookStateService { get; set; }
+    [Inject] public NavigationService navigationService { get; set; }
+    [Parameter] public Guid Id { get; set; }
+
+    BookResult Book = new();
+
+    StudyCreate studyCreate = new StudyCreate();
+    ChapterCreate chapterCreate = new ChapterCreate();
+
+    bool loading = false;
+    protected override async Task OnInitializedAsync()
+    {
+        loading = true;
+
+
+        var book = await bookStateService.GetBookByIdAsync(Id);
+        if (book == null)
+        {
+            snackbar.Add(ApplicationConfig.BookInvalid, Severity.Error);
+            if (navigationService.CanNavigateBack)
+            {
+                navigationService.NavigateBack();
+            }
+        }
+        Book = book;
+        chapterCreate.BookId = Book.Id;
+
+        loading = false;
+    }
+    bool IsGroupExpended = true;
+    async void SaveNewChapter()
+    {
+        MessageBoxOptions options = new MessageBoxOptions()
+            {
+                CancelText = "کنسل",
+                YesText = "اضافه کن",
+                Message = "از اضافه کردن این فصل به این کتاب مطمئی؟"
+            };
+
+        var result = await dialogService.ShowMessageBox(options);
+        if (result.GetValueOrDefault(false))
+        {
+            var book = await bookStateService.CreateChapterAsync(chapterCreate);
+            if (book != null)
+            {
+                Book = book;
+
+                StateHasChanged();
+                snackbar.Add("اضافه شد", Severity.Success, option => { option.Icon = Icons.Filled.Check; });
+                chapterCreate = new();
+                chapterCreate.BookId = Book.Id;
+                StateHasChanged();
+            }
+            else
+            {
+                snackbar.Add("مشکلی در افزودن فصل به وجود آمد", Severity.Error);
+            }
+        }
+    }
+
+    async Task SaveNewStudy()
+    {
+        MessageBoxOptions options = new MessageBoxOptions()
+            {
+                CancelText = "کنسل",
+                YesText = "اضافه کن",
+                Message = "این مطالعه اضافه بشه؟",
+            };
+
+        var result = await dialogService.ShowMessageBox(options);
+        if (result.GetValueOrDefault(false))
+        {
+            var book = await bookStateService.CreateStudyAsync(studyCreate);
+            if (book != null)
+            {
+                Book = book;
+
+                StateHasChanged();
+                snackbar.Add("اضافه شد", Severity.Success, option => { option.Icon = Icons.Filled.Check; });
+
+                navigationService.NavigateTo($"/Book/{Book.Id}");
+            }
+            else
+            {
+                snackbar.Add("اضافه شدن مطالعه با مشکل روبرو شد", Severity.Error);
+            }
+        }
+    }
+    void GroupSelected(Guid id)
+    {
+        studyCreate.ChapterId = id;
+        IsGroupExpended = !IsGroupExpended;
+    }
+}

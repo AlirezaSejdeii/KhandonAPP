@@ -1,0 +1,22 @@
+﻿@inject NavigationManager navigation;
+<CascadingAuthenticationState>
+    <Router AppAssembly="@GetType().Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <NotAuthorized>
+                    لطفا به نرم افزار ورود کنید
+                    @{
+                        navigation.NavigateTo("/Account/Login");
+                    }
+                </NotAuthorized>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <PageTitle>404</PageTitle>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <p role="alert">ادرس مورد نظر یافت نشد</p>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>

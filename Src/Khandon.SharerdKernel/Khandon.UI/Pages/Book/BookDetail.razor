@@ -1,0 +1,256 @@
+﻿@page "/Book/{Id:guid}"
+@attribute [Authorize]
+
+<PageTitle>جزئیات کتاب</PageTitle>
+
+@if (loading == false)
+{
+    string newStudy = $"/NewStudy/{Book.Id}";
+    <MudFab DisableElevation ButtonType="ButtonType.Button"
+        Icon="@Icons.Outlined.Add" Color="Color.Primary"
+        Label="افزودن مطالعه" Href=@newStudy
+        Style="margin-bottom:20px;margin-top:-15px;width:100%"></MudFab>
+    <MudGrid>
+        <MudItem xs="12" sm="12">
+            <MudCard Elevation="2" Class="pa-2">
+                <MudText Align="Align.Center">
+                    @Book.Title
+                </MudText>
+            </MudCard>
+        </MudItem>
+        @if (!string.IsNullOrEmpty(Book.Description))
+        {
+            <MudItem xs="12" sm="12">
+                <MudCard Elevation="2" Class=" pa-2">
+                    <MudText Align="Align.Center">
+                        @Book.Description
+                    </MudText>
+                </MudCard>
+            </MudItem>
+        }
+        <MudItem xs="12" sm="12">
+            <MudCard Elevation="2" Class="pa-2">
+                <MudText Align="Align.Center">
+                    <b>@((DateTime.Today-Book.CreateDate).Days)</b> روز از شروع مطالعه گذشته
+                </MudText>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" sm="12">
+            <MudCard Elevation="2" Class="pa-2">
+                <MudText Align="Align.Center">
+                    <b>@(Book.Chapters.SelectMany(a => a.Studies.ToList()).OrderBy(a=> a.CreateDate).Count())</b> مطالعه ثبت شده
+                </MudText>
+            </MudCard>
+        </MudItem>
+        @if(Book.Chapters.SelectMany(a=> a.Studies).Any(a=> a.Flag!=0 && a.Flag!= null)){
+             <MudItem xs="12" Class="mb-n3">
+            <MudText Typo="Typo.subtitle2">
+                اخرین نشانک
+            </MudText>
+        </MudItem>
+        <MudItem xs="12">
+            <MudCard Elevation="2" Class="pa-2">
+                <MudText Align="Align.Center" Typo="Typo.h6">
+                  @Book.Chapters.SelectMany(a=> a.Studies).OrderBy(a=> a.CreateDate).Last().Flag
+                </MudText>
+            </MudCard>
+        </MudItem>
+        }
+        <MudItem xs="12" Class="mb-n3">
+            <MudText Typo="Typo.subtitle2">
+                ثبت شده توسط شما
+            </MudText>
+        </MudItem>
+        <MudItem xs="12">
+            <MudCard Elevation="2" Class="pa-2">
+                <MudText Align="Align.Center" Typo="Typo.h6">
+                    @{
+                        int sum = Book.Chapters.SelectMany(a => a.Studies.Select(b => b.Length).ToList()).Sum();
+                    }
+                    @sum     @((Book.BookType==Khandon.Shared.Dto.Enums.BookTypeEnum.Minut)?"دقیقه":"صفحه")
+                </MudText>
+            </MudCard>
+        </MudItem>
+
+        @*        <MudItem xs="12" Class="mb-n3">
+    <MudText Typo="Typo.subtitle2">
+    تخمین زمان صرف شده
+    </MudText>
+    </MudItem>
+    <MudItem xs="12">
+    <MudCard Elevation="2" Class="pa-2">
+    <MudText Align="Align.Center" Typo="Typo.h6">
+    1500 دقیقه مطالعه
+    </MudText>
+    </MudCard>
+    </MudItem>*@
+        <MudItem xs="12" Class="mb-n3">
+
+            <MudText Typo="Typo.subtitle2">
+                دسته بندی
+            </MudText>
+        </MudItem>
+        <MudItem xs="12" sm="12">
+            <MudCard Elevation="2" Class="pa-2">
+                <MudText Align="Align.Center" Typo="Typo.h6">
+                    @Book.BookGroup.Title
+                </MudText>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" Class="mb-n3">
+            <MudText Typo="Typo.subtitle2">
+                سطح دشواری
+            </MudText>
+        </MudItem>
+        <MudItem xs="12" sm="12">
+            <MudItem xs="12" sm="12">
+                <DIficaltySlider InitialValue="Book.Difficultye" Disable=true></DIficaltySlider>
+            </MudItem>
+        </MudItem>
+    </MudGrid>
+    <MudExpansionPanels DisableBorders=true DisableGutters=true Dense="true" Class="mt-4 mb-4">
+        @foreach (var chapter in Book.Chapters)
+        {
+            <MudExpansionPanel Text=@chapter.Title IsInitiallyExpanded=true>
+                <ChildContent>
+                    <MudSimpleTable Style="overflow-x: auto;" Dense=true Hover=true Striped=true Class="mt-5">
+                        <thead>
+                            <tr>
+                                <th>
+                                    تاریخ
+                                </th>
+                                <th>
+                                    عنوان
+                                </th>
+                                <th>
+
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var study in chapter.Studies)
+                            {
+                                <tr>
+                                    <td>@study.CreateDate.ToShamsi()</td>
+                                    <td>@study.Title</td>
+                                    <td>
+                                        <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Primary" OnClick="(()=> SeeStudyDetail(study))">جزئیات</MudButton>
+                                    </td>
+                                </tr>
+                            }
+                            @*   <tr>
+                    <td>1401/02/21</td>
+                    <td>تداعی گر</td>
+                    </tr>
+
+                    <tr>
+                    <td>1401/02/21</td>
+                    <td>سوء درک</td>
+                    </tr>*@
+                        </tbody>
+                    </MudSimpleTable>
+                </ChildContent>
+            </MudExpansionPanel>
+        }
+    </MudExpansionPanels>
+    <div style="margin:85px auto">
+        <ChartJsLineForBookDetail numbers="numbers.ToArray()"
+                              chapters="chapters.ToArray()"
+                              types="types.ToArray()"
+                              lables="lables.ToArray()"></ChartJsLineForBookDetail>
+    </div>
+}
+else
+{
+    <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="60px" Class="mt-6" />
+    <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="60px" Class="mt-6" />
+    <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="60px" Class="mt-6" />
+    <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="60px" Class="mt-6" />
+    <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="60px" Class="mt-6" />
+
+    <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="200px" Class="mt-6" />
+    <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="200px" Class="mt-6" />
+
+
+
+}
+
+@code {
+
+    [Parameter] public Guid Id { get; set; }
+
+    //makeChart([15, 21, 17, 9, 8], ["فصل1", "فصل1", "فصل2", "فصل2", "فصل2"], ["صفحه", "صفحه", "صفحه", "دقیقه", "دقیقه"]);
+    [Inject] public BookStateService bookStateService { get; set; }
+
+    [Inject] public ISnackbar snackbar { get; set; }
+    [Inject] public IDialogService dialogService { get; set; }
+    [Inject] public NavigationService navigationService { get; set; }
+
+    BookResult Book = new();
+    bool loading = false;
+
+
+    //List<int> numbers = new() { 15, 21, 17, 9, 8 };
+    //List<string> chapters = new() { "فصل2", "فصل1", "فصل1", "فصل2", "فصل2" };
+    //List<string> types = new() { "صفحه", "صفحه", "صفحه", "دقیقه", "دقیقه" };
+    //List<string> lables = new() { "1401/01/29", "1401/01/20", "1401/01/18", "1401/01/15", "1401/01/12", "1401/01/10" };
+
+    List<int> numbers = new();
+    List<string> chapters = new();
+    List<string> types = new();
+    List<string> lables = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        loading = true;
+        var book = await bookStateService.GetBookByIdAsync(Id);
+
+        if (book == null)
+        {
+            snackbar.Add(ApplicationConfig.BookInvalid, Severity.Error);
+            navigationService.NavigateTo("/");
+            return;
+        }
+        Book = book;
+
+
+        var listStudies = Book.Chapters.SelectMany(a => a.Studies.ToList()).ToList();
+        //numbers = listStudies.Select(a => a.Length).ToArray();
+
+        foreach (var item in listStudies.OrderBy(a => a.CreateDate).ToList())
+        {
+            numbers.Add(item.Length);
+            chapters.Add(book.Chapters.Where(a => item.ChapterId == a.Id).First().Title);
+            types.Add((item.BookType == Khandon.Shared.Dto.Enums.BookTypeEnum.Minut) ? "دقیقه" : "صفحه");
+            lables.Add(item.CreateDate.ToShamsi());
+        }
+        loading = false;
+
+
+    }
+    async Task SeeStudyDetail(StudyResult study)
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("study", study);
+        //snackbar.Add("button", Severity.Info);
+        dialogService.Show<StudyDetail>("جزئیات مطالعه", parameters);
+    }
+    public Color UserStudiesStatus(int value)
+    {
+        if (value > 0 && value < 5)
+        {
+            return Color.Info;
+        }
+
+        if (value > 5 && value < 10)
+        {
+            return Color.Primary;
+        }
+
+        if (value > 10 && value < 15)
+        {
+            return Color.Error;
+        }
+        return Color.Info;
+    }
+}
