@@ -52,11 +52,13 @@ namespace Khandon.Infrastructure.Users.Services
                     client.Send(message);
                     client.Disconnect(true);
 
+                    Console.WriteLine("Email Success fully sent");
                     return true;
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
-
+                    Console.WriteLine("Email Sent Faild!!!");
+                    Console.WriteLine(e.Message);
                     return false;
                 }
             }
