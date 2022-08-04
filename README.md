@@ -11,7 +11,7 @@ You can know about how many time spend to study or how many page you saw. and yo
 
 In other hand we have social page. in this page you can see people must study is in witch catgory.
 
-# Give me star ⭐️
+# Give Me Star ⭐️
 
 if you think this project is great to you give star to repository
 
@@ -20,13 +20,36 @@ I made this project with `Asp.net 6` and `Blazor webassembly` also use `maui` wi
 
 In the fact i try to follow `clean architecture` patterns. but this project was built in a hurry. I would really like to refactor this and do full unit testing and integration testing to make this repository as best.
 
+
+`Authentication`: use encripted `JWT Token` for authentication. and use `Authentication State` blaozr authentication state manger for clinet.
+
+Also i implement these options:
+
+`Add New book`
+
+`Book Detail`
+
+`New Chapter & Study`
+
+`study chart line (chart.js)`
+
+`personal learn status`
+
+and last `social learn status`
+
+
+
+# Client UI Component 
+I used `MudBlazor` for ui component. i think thats great but can be greater when download size make decrease
+
+
 # Project pictures
 
 
 <div align=center>
-<img src="https://raw.githubusercontent.com/AlirezaSejdeii/alirezasejdeii/main/pic/1.png" style="width:500px"/>
-<img src="https://raw.githubusercontent.com/AlirezaSejdeii/alirezasejdeii/main/pic/2.png" style="width:500px"/>
-<img src="https://raw.githubusercontent.com/AlirezaSejdeii/alirezasejdeii/main/pic/3.png" style="width:500px"/>
-<img src="https://raw.githubusercontent.com/AlirezaSejdeii/alirezasejdeii/main/pic/4.png" style="width:500px"/>
-<img src="https://raw.githubusercontent.com/AlirezaSejdeii/alirezasejdeii/main/pic/5.png" style="width:500px"/>
+<img src="https://raw.githubusercontent.com/AlirezaSejdeii/alirezasejdeii/main/pic/1.png" style="width:350px"/>
+<img src="https://raw.githubusercontent.com/AlirezaSejdeii/alirezasejdeii/main/pic/2.png" style="width:350px"/>
+<img src="https://raw.githubusercontent.com/AlirezaSejdeii/alirezasejdeii/main/pic/3.png" style="width:350px"/>
+<img src="https://raw.githubusercontent.com/AlirezaSejdeii/alirezasejdeii/main/pic/4.png" style="width:350px"/>
+<img src="https://raw.githubusercontent.com/AlirezaSejdeii/alirezasejdeii/main/pic/5.png" style="width:350px"/>
 </div>
